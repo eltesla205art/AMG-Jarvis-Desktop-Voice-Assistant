@@ -1,149 +1,156 @@
-# Jarvis Desktop Voice Assistant🔥
+# O.R.I.O.N. — AI Voice Assistant
 
-<img src="https://giffiles.alphacoders.com/212/212508.gif" alt="">
+<p align="center">
+  <img src="Images/orion_cover.jpg" alt="O.R.I.O.N. AI Voice Assistant — Powered by AMG" width="520">
+</p>
 
-**Have you ever wondered how cool it would be to have your own assistant? Imagine how easier it would be doing Wikipedia searches without opening web browsers, and performing many other daily tasks like playing music with the help of a single voice command, opening different browsers in just a voice command.**
+<p align="center"><b>A bilingual (English 🇬🇧 / French 🇫🇷) desktop voice assistant for Windows, macOS and Linux.</b><br>
+Powered by AMG · Ascension Media Group</p>
 
-**This project is simple desktop voice assistant built with python named as “Jarvis Desktop Voice Assistant”. This project is fully completed and error free. It was compiled in VS Code Editor.**
+O.R.I.O.N. listens on your microphone, works out whether you spoke English or French, and answers in the same language. Run it from one script, `orion.py`. It opens a small window built around the O.R.I.O.N. artwork, and you can also run it in the terminal.
 
-**🔸 Let's be honest, it's not as intelligent as in the movie, but it can do a lot of cool things and automate your daily tasks you do on your personal computers/laptops.**
+<p align="center"><img src="Images/orion_hud.png" alt="O.R.I.O.N. window" width="300"></p>
 
-## 📌Built with
+## Features
 
-<code><img height="30" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/python/python.png"></code>
+| | English example | Exemple en français |
+|---|---|---|
+| Greets you by time of day | *(at start-up)* | *(au démarrage)* |
+| Time & date | "What time is it?" · "What's the date?" | « Quelle heure est-il ? » · « On est quel jour ? » |
+| Open any website | "Open YouTube" · "Open github dot com" | « Ouvre Google » · « Ouvre lemonde point fr » |
+| Google / YouTube search | "Search for cheap flights" · "Play Daft Punk on YouTube" | « Cherche des recettes de crêpes » · « Cherche Stromae sur YouTube » |
+| Wikipedia summary (read aloud) | "Who is Marie Curie?" · "Search Wikipedia for black holes" | « Qui est Victor Hugo ? » · « Parle-moi de la tour Eiffel » |
+| Local music | "Play music" · "Play song get lucky" | « Joue de la musique » · « Mets la chanson alors on danse » |
+| Jokes | "Tell me a joke" | « Raconte-moi une blague » |
+| Screenshots | "Take a screenshot" | « Fais une capture d'écran » |
+| Quick notes | "Take a note call the bank tomorrow" · "Read my notes" | « Prends une note acheter du pain » · « Lis mes notes » |
+| Shut down / restart *(asks for confirmation first)* | "Shut down the computer" · "Restart" | « Éteins l'ordinateur » · « Redémarre » |
+| Language | "Speak French" · "Bilingual mode" | « Parle anglais » · « Mode bilingue » |
+| Help / stop | "Help" · "Goodbye" | « Aide » · « Au revoir » |
 
-## 📌 Features
+You can start a command with *"Hey Orion"*, but you don't have to.
 
-Jarvis is now more powerful and bilingual! Some of its key features include:
+### When something goes wrong
+- **Missed or unclear speech:** O.R.I.O.N. ignores silence. If it hears something it doesn't understand, it says so and suggests "help". It never crashes on bad input.
+- **Missing details:** say "Open…" or "Take a note" on its own and it asks what you meant.
+- **No microphone or PyAudio:** it tells you and switches to typed commands.
+- **No internet:** speech recognition and Wikipedia need a connection. O.R.I.O.N. tells you once and keeps running.
+- **No text-to-speech engine:** replies are still shown on screen.
+- **A command fails:** the error is logged, O.R.I.O.N. tells you, and it keeps listening.
 
-- **Bilingual Support (FR/EN)**: Native ability to understand and respond in both French and English.
-- **Cross-Platform**: Fully compatible with Linux (Fedora, Ubuntu/Debian) and Windows.
-- **Greet User**: Greets you based on the time of day.
-- **Time & Date**: Tells you the current time and date in the chosen language.
-- **System Control**: Restart or Shut down your system via voice commands.
-- **Web Browsing**: Open YouTube, Google, or any website.
-- **Wikipedia**: Search for information and get a voice summary.
-- **Entertainment**: Play music from your local library or tell jokes.
-- **Productivity**: Take screenshots and save notes.
+## Quick start
 
-## 📌 Key Advantages
+**Requires Python 3.9+.**
 
-Why choose this version of Jarvis?
+### 1. System packages (only for the microphone and the voice)
 
-1.  **Seamless Bilingualism**: No need to manually switch languages. Jarvis detects the intent and adapts its voice and vocabulary dynamically.
-2.  **Linux Ready**: Optimized for modern Linux environments using `systemctl` for power management and `xdg-open` for media.
-3.  **Modular Architecture**: Built with a centralized translation system (`STRINGS` dictionary), making it extremely easy to add new languages or modify existing ones.
-4.  **Zero-Latency Logic**: Optimized command handling replacing complex decision trees with a lean, mapping-based approach.
-5.  **Clean & Maintainable**: Refactored according to NASA-inspired coding standards for maximum reliability.
+| OS | Command |
+|---|---|
+| **Windows** | Nothing extra. PyAudio installs from a wheel. |
+| **macOS** | `brew install portaudio` |
+| **Ubuntu / Debian** | `sudo apt install python3-tk python3-dev portaudio19-dev espeak-ng alsa-utils xdg-utils` |
+| **Fedora** | `sudo dnf install python3-tkinter python3-devel portaudio-devel espeak-ng alsa-utils xdg-utils` |
 
-## Requirements
+For French speech, install a French voice:
+- **Windows:** Settings → Time & Language → Speech → *Add voices* → Français (France).
+- **macOS:** System Settings → Accessibility → Spoken Content → System voice → *Manage Voices* → French (e.g. Thomas or Amélie).
+- **Linux:** `espeak-ng` already includes French.
 
-Python 3.6+
+### 2. Install and run
 
-## 📌Installation
+```bash
+git clone https://github.com/eltesla205art/AMG-Jarvis-Desktop-Voice-Assistant.git
+cd AMG-Jarvis-Desktop-Voice-Assistant
+python -m venv .venv
+# Windows: .venv\Scripts\activate      macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+python orion.py
+```
 
-1. **Fork The Repository**
-   - Click the "Fork" button on the top right corner of the repository page.
+On macOS, allow microphone access for your terminal the first time (System Settings → Privacy & Security → Microphone).
 
-2. **Clone The Repository**
-   - Clone the forked repository to your local machine:
-     ```bash
-     git clone <URL>
-     cd Jarvis-Desktop-Voice-Assistant
-     ```
+### Options
 
-3.  **Create and Activate a Virtual Environment**
-     - Create a virtual environment:
-     ```bash
-     python -m venv .venv
-     ```
-   - Activate the virtual environment:
-     - For Windows:
-       ```bash
-       .venv\Scripts\activate
-       ```
-     - For macOS/Linux:
-       ```bash
-       source .venv/bin/activate
-       ```
-   - This activates the virtual environment and should look like `(venv) directory/of/your/project>`
+```bash
+python orion.py              # window + voice (type commands in the box too)
+python orion.py --console    # terminal only
+python orion.py --text       # type instead of speaking (no microphone needed)
+python orion.py --lang fr    # French only  (en = English only, auto = both, default)
+python orion.py --debug      # verbose logs
+```
 
-### 4. Install Requirements
+## Configuration
 
-- Install all the requirements given in **[requirements.txt](https://github.com/kishanrajput23/Jarvis-Desktop-Voice-Assistant/blob/main/requirements.txt)** by running the command `pip install -r requirements.txt`
+Copy `orion_config.example.json` to `orion_config.json` and change only the keys you need:
 
-### 5. System Prerequisites (Linux Only)
+| Key | Default | Meaning |
+|---|---|---|
+| `user_name` | `""` | Your name, used in greetings |
+| `language` | `"auto"` | `auto` (English + French), `en` or `fr` |
+| `default_language` | `"en"` | Language used for the greeting |
+| `music_dir` | your Music folder | Folder searched for `.mp3 .flac .wav .ogg .m4a…` files (subfolders included) |
+| `notes_file` | `~/ORION/notes.txt` | Where notes are saved |
+| `screenshot_dir` | `~/Pictures/ORION` | Where screenshots are saved |
+| `confirm_power_actions` | `true` | Ask "are you sure?" before shutting down or restarting |
+| `listen_timeout` / `phrase_time_limit` | `6` / `12` | Seconds to wait for speech / maximum command length |
+| `speech_rate` | `175` | Speaking speed |
+| `text_mode` | `false` | Always use typed commands |
 
-Before running Jarvis on Linux, you need to install some system dependencies:
+## How it works
 
-- **For Ubuntu/Debian:**
-  ```bash
-  sudo apt-get install -y python3-tk python3-dev scrot
-  ```
-- **For Fedora:**
-  ```bash
-  sudo dnf install -y python3-tkinter python3-devel scrot
-  ```
+```
+orion.py                 ← the one script you run
+orion/
+  assistant.py           ← listen → understand → act loop, language detection
+  voice.py               ← Speaker (macOS `say` / pyttsx3) and Listener (SpeechRecognition)
+  i18n.py                ← every sentence, in English and French
+  text.py                ← accent/punctuation-insensitive phrase matching
+  config.py              ← settings + orion_config.json
+  platform_utils.py      ← open files/URLs, shut down/restart, per OS
+  gui.py / ui.py         ← window and terminal front-ends
+  skills/                ← one file per feature (clock, web, wiki, music, jokes, screenshot, notes, system, general)
+tests/test_orion.py      ← offline tests: python -m unittest discover tests
+```
 
-### 6. Install PyAudio
-   - Follow the instructions given **[here](https://stackoverflow.com/questions/52283840/i-cant-install-pyaudio-on-windows-how-to-solve-error-microsoft-visual-c-14)**
+**Language detection.** Every phrase you say is first transcribed in the current language. If that transcript doesn't clearly match a command, the same audio is also transcribed in the other language. O.R.I.O.N. keeps the transcript that matches a command *in its own language*. French run through the English recognizer rarely turns into a valid English command, so this choice is reliable. Replies follow the language you last used.
 
-6. **Run the Assistant**
-  - Run the main script:
-    ```bash
-    python jarvis.py
-    ```
-  - Now Enjoy with your own assistant !!!!
+**Speech engines.** Recognition uses the free Google Web Speech API through the `SpeechRecognition` package, so it needs internet access. Speech output works offline: SAPI5 on Windows, `say` on macOS and eSpeak NG on Linux.
 
-7. **Deactivate the Virtual Environment**
-   - After you're done, deactivate the virtual environment:
-     ```bash
-     deactivate
-     ```
+## Adding your own command
 
-## 📌Contributing
+Create a file in `orion/skills/`. It is picked up automatically:
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+```python
+# orion/skills/weather.py
+from . import skill
 
-## 📌Author
+@skill("weather", en=["weather", "forecast"], fr=["météo", "quel temps"])
+def weather(ctx, req):
+    city = req.rest or "your city"     # words spoken after the trigger
+    ctx.say_text(f"Looking up the weather in {city}..." if ctx.lang == "en"
+                 else f"Je regarde la météo à {city}...")
+```
 
-👤 **Kishan Kumar Rai**
+- `ctx.say(key, **values)` speaks a sentence from `i18n.py` in the current language. `ctx.say_text(text)` speaks any text.
+- `ctx.ask(key)` asks a question and returns the answer. `ctx.confirm(key)` returns True or False.
+- `ctx.lang`, `ctx.config`, `ctx.stop()`.
+- `req.raw`, `req.rest` (text after the trigger) and `req.before` (text before it).
 
-- Twitter: [@kishan_rajput23](https://twitter.com/kishan_rajput23)
-- Github: [@kishanrajput23](https://github.com/kishanrajput23)
-- LinkedIn: [@kishan-kumar-rai](https://linkedin.com/in/kishan-kumar-rai-23112000)
+When two trigger phrases match, the longer one wins. Add the trigger in both languages and put new sentences in both blocks of `i18n.py`.
 
-## 📌Show your support
+## Troubleshooting
 
-Please ⭐️ this repository if this project helped you!
+| Problem | Fix |
+|---|---|
+| `Could not find PyAudio` / no microphone | Install the system packages above, then `pip install PyAudio`. Or use `--text`. |
+| It speaks English with an English voice when you speak French | Install a French system voice (see above). |
+| Linux: no sound from the voice | Install `espeak-ng` and `alsa-utils`. |
+| Linux Wayland: screenshot fails | Install `gnome-screenshot` or `grim`, which Pillow uses as a fallback. |
+| Linux: shutdown or restart refused | Your session must be allowed to run `systemctl poweroff` / `reboot` (the default on desktop distros). |
+| No window appears | Install Tk (`python3-tk`), or run with `--console`. |
 
-## 📌License
+## Credits & license
 
-This project is [MIT](https://choosealicense.com/licenses/mit/) licensed.
+O.R.I.O.N. is built by AMG · Ascension Media Group on top of the open-source [Jarvis Desktop Voice Assistant](https://github.com/kishanrajput23/Jarvis-Desktop-Voice-Assistant) by Kishan Kumar Rai. The original script is still in `Jarvis/` for reference; it needs `pip install pyautogui wikipedia pyttsx3 SpeechRecognition pyjokes`.
 
-## 📌Learning Resources to Extend This Project
-
-To build this project further and enhance its capabilities, a strong understanding of the following areas is recommended:
-
-### 🐍 Python Fundamentals
-Python is the core language behind this project. A solid grasp of syntax, control flow, functions, and error handling will help you modify and extend the assistant’s functionality.  
-👉 [Python Programming Course](https://www.mygreatlearning.com/academy/premium/master-python-programming)
-
-### 🎙️ Voice Processing & NLP
-Voice commands are processed using speech and text-based techniques. Understanding Natural Language Processing (NLP) concepts such as tokenization and text analysis can help improve voice interaction.  
-👉 [Introduction to NLP](https://www.mygreatlearning.com/academy/learn-for-free/courses/introduction-to-natural-language-processing)
-
-### 🤖 Intelligence & Generative AI
-Currently, the assistant follows predefined logic. By integrating Generative AI concepts, it can be enhanced into a conversational assistant capable of generating intelligent responses and performing web-based tasks.  
-👉 [Introduction to Generative AI](https://www.mygreatlearning.com/academy/premium/master-generative-ai)
-
-### 👁️ Computer Vision
-To make the assistant more advanced, computer vision can be introduced for features like face detection and gesture control. Learning image and video processing fundamentals is a good starting point.  
-👉 [Computer Vision Essentials](https://www.mygreatlearning.com/academy/learn-for-free/courses/computer-vision-essentials)
-
-### 📄 Related Reading
-For a conceptual overview of building voice assistants in Python, you can refer to this article: [CLICK HERE](https://www.mygreatlearning.com/blog/jarvis-desktop-assistant-python-project/)
-
----
-
-> *Some learning resources mentioned above are shared as part of an educational collaboration.*
+Released under the [MIT License](LICENSE).

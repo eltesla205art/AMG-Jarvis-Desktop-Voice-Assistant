@@ -1,5 +1,8 @@
-pyttsx3~=2.90
-wikipedia~=1.4.0
-PyAutoGUI~=0.9.54
-SpeechRecognition~=3.10.4
-pyjokes==0.6.0
+# O.R.I.O.N. — install with:  pip install -r requirements.txt
+# (see README for the few system packages needed first on macOS/Linux)
+SpeechRecognition>=3.14,<4      # microphone + Google Web Speech recognition
+PyAudio>=0.2.14                 # microphone access used by SpeechRecognition
+pyttsx3>=2.98; sys_platform != "darwin"   # text-to-speech (macOS uses the built-in `say`)
+pyjokes>=0.8                    # extra English jokes
+mss>=9.0                        # screenshots
+Pillow>=10.0                    # screenshot fallback (Wayland, etc.)

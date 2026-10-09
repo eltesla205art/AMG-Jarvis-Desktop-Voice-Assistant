@@ -1,0 +1,13 @@
+{
+  "user_name": "",
+  "language": "auto",
+  "default_language": "en",
+  "music_dir": "~/Music",
+  "notes_file": "~/ORION/notes.txt",
+  "screenshot_dir": "~/Pictures/ORION",
+  "confirm_power_actions": true,
+  "listen_timeout": 6,
+  "phrase_time_limit": 12,
+  "speech_rate": 175,
+  "text_mode": false
+}
