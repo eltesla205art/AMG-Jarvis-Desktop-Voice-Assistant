@@ -41,6 +41,15 @@ class Config:
     speech_rate: int = 175
     # Only react to speech that starts with "Hey Orion" (typed commands never need it).
     wake_word: bool = True
+    # "auto": offline openWakeWord when installed and the model exists, otherwise
+    # spot the phrase in online transcripts. "openwakeword" / "transcript" force one.
+    wake_engine: str = "auto"
+    # Trained model file (relative to the project folder), a built-in
+    # openWakeWord name such as "hey_jarvis", or a list of them
+    # (e.g. one model for "Hey Orion" and one for "Dis Orion").
+    wake_model: str | list[str] = "models/hey_orion.onnx"
+    # Detection score (0-1) needed to wake; raise it if O.R.I.O.N. wakes by mistake.
+    wake_threshold: float = 0.5
     # Type commands instead of speaking them (also used when no mic is found).
     text_mode: bool = False
 
@@ -48,6 +57,9 @@ class Config:
         if self.language not in ("auto", *SUPPORTED_LANGUAGES):
             log.warning("Unknown language %r, using 'auto'.", self.language)
             self.language = "auto"
+        if self.wake_engine not in ("auto", "openwakeword", "transcript"):
+            log.warning("Unknown wake_engine %r, using 'auto'.", self.wake_engine)
+            self.wake_engine = "auto"
         if self.default_language not in SUPPORTED_LANGUAGES:
             self.default_language = "en"
         if self.language != "auto":

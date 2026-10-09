@@ -15,6 +15,7 @@ from .i18n import t
 from .skills import Match, Request, find_skill, load_all
 from .text import find_wake_word, has_any_word, normalize, strip_wake_word
 from .voice import Heard, Listener, NoMicrophone, Speaker, SpeechServiceError
+from .wakeword import WakeWordDetector, create_detector
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +48,8 @@ class Assistant:
         self.speaker = Speaker(config.speech_rate)
         self.listener: Listener | None = None
         self._service_errors = 0
+        self.wake_detector: WakeWordDetector | None = None
+        self._typed: str | None = None  # typed while waiting for the wake word
         load_all()
 
     # ------------------------------------------------------- skill-facing API
@@ -122,6 +125,7 @@ class Assistant:
             return
         try:
             self.listener = Listener(self.config.listen_timeout, self.config.phrase_time_limit)
+            self.wake_detector = create_detector(self.config, self.listener.wake_stream)
         except NoMicrophone as exc:
             log.warning("Voice input unavailable: %s", exc)
             self.ui.log("error", str(exc))
@@ -147,13 +151,19 @@ class Assistant:
         Returns [] when nothing usable was heard, None when input is closed.
         """
         addressed = follow_up or awake or not self.needs_wake_word
-        typed = self.ui.poll_text()
+        typed, self._typed = self._typed or self.ui.poll_text(), None
         if typed:
             return [Heard(typed, None, 1.0)]
         if self.listener is None:
             self.ui.status(t("idle", self.lang), "idle")
             text = self.ui.read_text()
             return None if text is None else ([Heard(text, None, 1.0)] if text else [])
+
+        if not addressed and self.wake_detector:
+            if not self._wait_for_wake_word():
+                return []  # typed command (picked up next turn), or shutting down
+            self.say("wake_ack")
+            addressed = True
 
         self.ui.status(t("listening" if addressed else "waiting_wake", self.lang), "listening")
         try:
@@ -188,6 +198,20 @@ class Assistant:
             # Not talking to O.R.I.O.N.: drop it silently.
             candidates = [h for h in candidates if find_wake_word(h.text) is not None]
         return candidates
+
+    def _wait_for_wake_word(self) -> bool:
+        """Listen offline until the wake word. False if interrupted by typing or exit."""
+        def interrupted() -> bool:
+            self._typed = self._typed or self.ui.poll_text()
+            return bool(self._typed) or not self.running or self.ui.closed
+
+        self.ui.status(t("waiting_wake", self.lang), "listening")
+        try:
+            return self.wake_detector.wait(interrupted)
+        except Exception as exc:  # microphone or model failure: keep going without it
+            log.warning("Offline wake word stopped (%s); using online detection.", exc)
+            self.wake_detector = None
+            return False
 
     def _match(self, heard: Heard) -> Match | None:
         text = strip_wake_word(heard.text)
