@@ -1,0 +1,12 @@
+# Optional: offline "Hey Orion" detection with openWakeWord.
+#   pip install -r requirements-wakeword.txt
+#   pip install --no-deps openwakeword==0.6.0
+# openWakeWord is installed with --no-deps because on Linux it also asks for
+# tflite-runtime, which has no builds for recent Python versions. O.R.I.O.N.
+# runs it with onnxruntime instead, on every OS.
+onnxruntime>=1.16,<2
+numpy>=1.24
+scipy>=1.10,<2
+scikit-learn>=1.2,<2
+tqdm>=4.0,<5
+requests>=2.0,<3

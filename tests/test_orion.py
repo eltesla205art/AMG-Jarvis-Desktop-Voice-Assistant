@@ -36,10 +36,15 @@ class FakeUI:
         self.typed = list(typed)
         self.said = []
 
+    pending = None
+    closed = False
+
     def start(self): pass
     def status(self, text, state="idle"): pass
-    def poll_text(self): return None
-    closed = False
+
+    def poll_text(self):
+        text, self.pending = self.pending, None
+        return text
 
     def log(self, who, text):
         if who == "orion":
@@ -195,10 +200,37 @@ class FakeListener:
         return Heard(text, lang, 0.9) if text else None
 
 
-def voice_session(utterances, **cfg):
-    assistant, ui = make_assistant(**cfg)
-    assistant._setup_listener = lambda: setattr(
-        assistant, "listener", FakeListener(assistant, utterances))
+class FakeDetector:
+    """Stands in for openWakeWord: each wait() returns the next scripted result
+    (True = wake word heard, "typed text" = user typed while waiting, Exception = failure)."""
+
+    def __init__(self, assistant, results):
+        self.assistant = assistant
+        self.results = list(results)
+
+    def wait(self, interrupted):
+        if not self.results:
+            self.assistant.stop()
+            return False
+        result = self.results.pop(0)
+        if isinstance(result, Exception):
+            raise result
+        if isinstance(result, str):
+            self.assistant.ui.pending = result
+            assert interrupted()  # the real detector checks this every 80 ms
+            return False
+        return result
+
+
+def voice_session(utterances, wakes=None, typed=(), **cfg):
+    assistant, ui = make_assistant(typed, **cfg)
+
+    def setup():
+        assistant.listener = FakeListener(assistant, utterances)
+        if wakes is not None:
+            assistant.wake_detector = FakeDetector(assistant, wakes)
+
+    assistant._setup_listener = setup
     assistant.config.text_mode = False
     assistant.run()
     return assistant, ui
@@ -234,6 +266,36 @@ class WakeWordTests(unittest.TestCase):
         _, ui = voice_session([{"en": "what time is it"}], wake_word=False)
         self.assertTrue(ui.said[1].startswith("It's"))
         self.assertNotIn("Hey Orion", ui.said[0])
+
+
+class OfflineWakeWordTests(unittest.TestCase):
+    def test_command_after_offline_wake_word(self):
+        # The detector woke us, so the command itself needs no "Hey Orion".
+        _, ui = voice_session([{"en": "what time is it"}], wakes=[True])
+        self.assertIn(ui.said[1], STRINGS["en"]["wake_ack"])
+        self.assertTrue(ui.said[2].startswith("It's"))
+
+    def test_nothing_is_transcribed_before_wake_word(self):
+        assistant, ui = voice_session([{"en": "what time is it"}], wakes=[])
+        self.assertEqual(len(ui.said), 1)                   # just the greeting
+        self.assertEqual(len(assistant.listener.utterances), 1)  # never captured
+
+    def test_typing_interrupts_the_wait(self):
+        _, ui = voice_session([], wakes=["tell me a joke"])
+        self.assertEqual(len(ui.said), 2)                   # greeting + joke
+
+    def test_detector_failure_falls_back_to_transcripts(self):
+        assistant, ui = voice_session([{"en": "hey orion what time is it"}],
+                                      wakes=[OSError("mic gone")])
+        self.assertIsNone(assistant.wake_detector)
+        self.assertTrue(ui.said[1].startswith("It's"))
+
+    def test_missing_model_means_no_offline_detector(self):
+        from orion.wakeword import create_detector, resolve_model
+        self.assertIsNone(create_detector(Config(wake_model="models/missing.onnx"), None))
+        self.assertIsNone(create_detector(Config(wake_engine="transcript"), None))
+        self.assertTrue(resolve_model("models/hey_orion.onnx").endswith("models/hey_orion.onnx"))
+        self.assertEqual(resolve_model("hey_jarvis"), "hey_jarvis")
 
 
 class AssistantTests(unittest.TestCase):

@@ -146,6 +146,10 @@ class Listener:
         except Exception as exc:  # no PyAudio, no input device, permission denied...
             raise NoMicrophone(str(exc)) from exc
 
+    def wake_stream(self):
+        """A 16 kHz microphone stream in 80 ms chunks, for the offline wake word."""
+        return self.sr.Microphone(sample_rate=16000, chunk_size=1280)
+
     def capture(self):
         """Record one phrase. Returns audio data, or None if nobody spoke."""
         try:
