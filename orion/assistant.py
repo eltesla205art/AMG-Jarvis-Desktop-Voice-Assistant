@@ -13,7 +13,7 @@ from . import SPOKEN_NAME
 from .config import Config
 from .i18n import t
 from .skills import Match, Request, find_skill, load_all
-from .text import has_any_word, normalize, strip_wake_word
+from .text import find_wake_word, has_any_word, normalize, strip_wake_word
 from .voice import Heard, Listener, NoMicrophone, Speaker, SpeechServiceError
 
 log = logging.getLogger(__name__)
@@ -113,8 +113,9 @@ class Assistant:
         self.running = False
 
     def greet(self) -> None:
+        hint = f" {t('wake_hint', self.lang)}" if self.needs_wake_word else ""
         self.say_text(f"{t(greeting_for(dt.datetime.now().hour), self.lang)}{self.user_suffix}! "
-                      f"{t('intro', self.lang, name=SPOKEN_NAME)}")
+                      f"{t('intro', self.lang, name=SPOKEN_NAME)}{hint}")
 
     def _setup_listener(self) -> None:
         if self.config.text_mode:
@@ -132,11 +133,20 @@ class Assistant:
         other = "fr" if self.lang == "en" else "en"
         return [self.lang, other]
 
-    def _next_input(self, follow_up: bool = False) -> list[Heard] | None:
+    @property
+    def needs_wake_word(self) -> bool:
+        return self.config.wake_word and self.listener is not None
+
+    def _next_input(self, follow_up: bool = False, awake: bool = False) -> list[Heard] | None:
         """Get the next command as candidate transcriptions (best first).
+
+        Speech is ignored unless it contains the wake word, except for answers
+        to a question (``follow_up``) and right after a bare "Hey Orion"
+        (``awake``). Typed commands never need it.
 
         Returns [] when nothing usable was heard, None when input is closed.
         """
+        addressed = follow_up or awake or not self.needs_wake_word
         typed = self.ui.poll_text()
         if typed:
             return [Heard(typed, None, 1.0)]
@@ -145,7 +155,7 @@ class Assistant:
             text = self.ui.read_text()
             return None if text is None else ([Heard(text, None, 1.0)] if text else [])
 
-        self.ui.status(t("listening", self.lang), "listening")
+        self.ui.status(t("listening" if addressed else "waiting_wake", self.lang), "listening")
         try:
             audio = self.listener.capture()
         except NoMicrophone as exc:  # e.g. the microphone was unplugged
@@ -165,7 +175,8 @@ class Assistant:
                 candidates.append(heard)
                 # Follow-up answers ("yes", a note) are in the current language;
                 # commands only need a second opinion when the first is unsure.
-                if follow_up or (heard.confidence >= CONFIDENT and self._match(heard)):
+                if follow_up or (heard.confidence >= CONFIDENT and self._match(heard)
+                                 and (addressed or find_wake_word(heard.text) is not None)):
                     break
             self._service_errors = 0
         except SpeechServiceError as exc:
@@ -173,6 +184,9 @@ class Assistant:
             if self._service_errors % SERVICE_ERROR_EVERY == 0:
                 self.say("service_down")
             self._service_errors += 1
+        if not addressed:
+            # Not talking to O.R.I.O.N.: drop it silently.
+            candidates = [h for h in candidates if find_wake_word(h.text) is not None]
         return candidates
 
     def _match(self, heard: Heard) -> Match | None:
@@ -199,8 +213,11 @@ class Assistant:
         heard, match = self.choose(candidates)
         text = strip_wake_word(heard.text)
         self.ui.log("user", heard.text)
-        if not text:
-            self.say("hello", user=self.user_suffix)  # just the wake word
+        if not text:  # just "Hey Orion": acknowledge, then take one command
+            self.say("wake_ack")
+            follow = self._next_input(awake=True)
+            if follow:
+                self.handle(follow)
             return
         if self.config.language == "auto":
             self.lang = heard.lang or (match.lang if match else self.lang)

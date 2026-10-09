@@ -5,6 +5,7 @@ Run:  python orion.py              (HUD window, voice + typed commands)
       python orion.py --console    (terminal only)
       python orion.py --text       (type commands instead of speaking)
       python orion.py --lang fr    (French only; default: auto EN/FR)
+      python orion.py --no-wake-word   (react without "Hey Orion" first)
 """
 
 from __future__ import annotations
@@ -23,6 +24,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="O.R.I.O.N. bilingual desktop voice assistant")
     parser.add_argument("--console", action="store_true", help="run in the terminal, no window")
     parser.add_argument("--text", action="store_true", help="type commands instead of speaking")
+    parser.add_argument("--no-wake-word", action="store_true",
+                        help='react to all speech, not only after "Hey Orion"')
     parser.add_argument("--lang", choices=["auto", "en", "fr"], help="language (default: auto)")
     parser.add_argument("--config", help="path to a JSON config file")
     parser.add_argument("--debug", action="store_true", help="verbose logging")
@@ -49,6 +52,8 @@ def main() -> int:
         config.language = args.lang
     if args.text:
         config.text_mode = True
+    if args.no_wake_word:
+        config.wake_word = False
     config.validate()
 
     hud = None if args.console else make_hud()

@@ -9,5 +9,6 @@
   "listen_timeout": 6,
   "phrase_time_limit": 12,
   "speech_rate": 175,
+  "wake_word": true,
   "text_mode": false
 }

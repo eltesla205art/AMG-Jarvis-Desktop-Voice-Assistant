@@ -20,7 +20,7 @@ from orion.skills.clock import format_date, format_time  # noqa: E402
 from orion.skills.music import pick_song  # noqa: E402
 from orion.skills.web import resolve_site  # noqa: E402
 from orion.skills.wiki import parse_summary  # noqa: E402
-from orion.text import normalize, strip_wake_word  # noqa: E402
+from orion.text import find_wake_word, normalize, strip_wake_word  # noqa: E402
 from orion.voice import Heard  # noqa: E402
 
 load_all()
@@ -67,7 +67,12 @@ class TextTests(unittest.TestCase):
 
     def test_wake_word(self):
         self.assertEqual(strip_wake_word("Hey Orion, what time is it"), "what time is it")
+        self.assertEqual(strip_wake_word("Dis Orion, joue de la musique"), "joue de la musique")
+        self.assertEqual(strip_wake_word("um hey orien play music"), "play music")
         self.assertEqual(strip_wake_word("what time is it"), "what time is it")
+        self.assertIsNotNone(find_wake_word("Orion, quelle heure est-il ?"))
+        # The name in the middle of a sentence is not a wake word.
+        self.assertIsNone(find_wake_word("tell me about the Orion nebula"))
 
 
 class MatchingTests(unittest.TestCase):
@@ -170,6 +175,65 @@ class ReadmeExampleTests(unittest.TestCase):
         self.assertIn("<tour Eiffel|fr>", said[2])
         _, said = self.run_one("Who is Marie Curie?")
         self.assertIn("<Marie Curie|en>", said[2])
+
+
+class FakeListener:
+    """Plays back utterances; each is {language: transcript}."""
+
+    def __init__(self, assistant, utterances):
+        self.assistant = assistant
+        self.utterances = list(utterances)
+
+    def capture(self):
+        if not self.utterances:
+            self.assistant.stop()
+            return None
+        return self.utterances.pop(0)
+
+    def transcribe(self, audio, lang):
+        text = audio.get(lang)
+        return Heard(text, lang, 0.9) if text else None
+
+
+def voice_session(utterances, **cfg):
+    assistant, ui = make_assistant(**cfg)
+    assistant._setup_listener = lambda: setattr(
+        assistant, "listener", FakeListener(assistant, utterances))
+    assistant.config.text_mode = False
+    assistant.run()
+    return assistant, ui
+
+
+class WakeWordTests(unittest.TestCase):
+    def test_ignores_speech_without_wake_word(self):
+        _, ui = voice_session([
+            {"en": "what time is it"},                      # not addressed: ignored
+            {"en": "hey orion what time is it"},
+        ])
+        self.assertEqual(len(ui.said), 2)                   # greeting + time
+        self.assertIn("Hey Orion", ui.said[0])
+        self.assertTrue(ui.said[1].startswith("It's"))
+
+    def test_bare_wake_word_then_command(self):
+        _, ui = voice_session([
+            {"en": "hey orion"},
+            {"fr": "quelle heure est-il", "en": "kel er a teal"},   # no wake word needed now
+        ])
+        self.assertIn(ui.said[1], STRINGS["en"]["wake_ack"])
+        self.assertTrue(ui.said[2].startswith("Il est"))
+
+    def test_french_wake_phrase(self):
+        _, ui = voice_session([{"fr": "dis Orion raconte-moi une blague", "en": "the sorry on"}])
+        self.assertEqual(len(ui.said), 2)
+
+    def test_answers_to_questions_need_no_wake_word(self):
+        _, ui = voice_session([{"en": "hey orion shut down the computer"}, {"en": "no"}])
+        self.assertIn("Okay, cancelled.", ui.said)
+
+    def test_can_be_turned_off(self):
+        _, ui = voice_session([{"en": "what time is it"}], wake_word=False)
+        self.assertTrue(ui.said[1].startswith("It's"))
+        self.assertNotIn("Hey Orion", ui.said[0])
 
 
 class AssistantTests(unittest.TestCase):
