@@ -39,6 +39,8 @@ class Config:
     listen_timeout: float = 6.0
     phrase_time_limit: float = 12.0
     speech_rate: int = 175
+    # Only react to speech that starts with "Hey Orion" (typed commands never need it).
+    wake_word: bool = True
     # Type commands instead of speaking them (also used when no mic is found).
     text_mode: bool = False
 

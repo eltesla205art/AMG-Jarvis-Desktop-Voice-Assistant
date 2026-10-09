@@ -5,7 +5,11 @@ from __future__ import annotations
 import re
 import unicodedata
 
-WAKE_WORDS = ("hey orion", "ok orion", "okay orion", "dis orion", "orion")
+# The wake phrase is a greeting followed by the name ("Hey Orion", "Dis Orion"),
+# or the name alone at the very start ("Orion, what time is it?").
+# Recognizers sometimes mishear the name, so a few close spellings count too.
+WAKE_GREETINGS = ("hey", "hi", "hello", "ok", "okay", "dis", "salut", "he", "eh", "allo", "bonjour")
+WAKE_NAMES = ("orion", "orien", "orian", "oreon", "o ryan", "o rion", "oh ryan")
 
 
 def normalize(text: str) -> str:
@@ -29,14 +33,27 @@ def phrase_pattern(phrase: str) -> re.Pattern[str]:
     return re.compile(r"(?<!\w)" + r"\s+".join(map(re.escape, words)) + r"(?!\w)")
 
 
+def _alternation(phrases: tuple[str, ...]) -> str:
+    return "|".join(r"\s+".join(map(re.escape, p.split())) for p in phrases)
+
+
+_NAME = rf"(?:{_alternation(WAKE_NAMES)})(?!\w)"
+_WAKE_RE = re.compile(
+    rf"(?<!\w)(?:{_alternation(WAKE_GREETINGS)})\s+{_NAME}"  # "hey orion" anywhere
+    rf"|^\s*{_NAME}"                                         # "orion ..." at the start
+)
+
+
+def find_wake_word(text: str) -> int | None:
+    """Index in ``text`` just after the wake phrase, or None if it isn't there."""
+    m = _WAKE_RE.search(normalize(text))
+    return m.end() if m else None
+
+
 def strip_wake_word(text: str) -> str:
-    norm = normalize(text)
-    for wake in WAKE_WORDS:
-        m = phrase_pattern(wake).match(norm.lstrip())
-        if m:
-            offset = len(norm) - len(norm.lstrip())
-            return text[offset + m.end():].strip(" ,")
-    return text
+    """Drop the wake phrase (and anything before it): "Hey Orion, play music" -> "play music"."""
+    end = find_wake_word(text)
+    return text if end is None else text[end:].strip(" ,.!?")
 
 
 def strip_words(text: str, words: tuple[str, ...]) -> str:

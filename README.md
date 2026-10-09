@@ -28,10 +28,18 @@ O.R.I.O.N. listens on your microphone, works out whether you spoke English or Fr
 | Language | "Speak French" · "Bilingual mode" | « Parle anglais » · « Mode bilingue » |
 | Help / stop | "Help" · "Goodbye" | « Aide » · « Au revoir » |
 
-You can start a command with *"Hey Orion"*, but you don't have to.
+### Wake word
+
+O.R.I.O.N. only reacts to speech that starts with **"Hey Orion"** (in French, **« Dis Orion »**). Everything else is ignored, so it won't answer conversations around it.
+- Say it together with the command: *"Hey Orion, what time is it?"*
+- Or say *"Hey Orion"* on its own. It answers *"Yes?"* and takes the next sentence as a command.
+- *"Ok Orion"*, *"Salut Orion"* and *"Orion, …"* at the start of a sentence also work.
+- Answers to its own questions (*"Are you sure?"*, *"What should I write down?"*) don't need the wake word, and neither do typed commands.
+
+To turn it off, use `python orion.py --no-wake-word` or set `"wake_word": false` in the config.
 
 ### When something goes wrong
-- **Missed or unclear speech:** O.R.I.O.N. ignores silence. If it hears something it doesn't understand, it says so and suggests "help". It never crashes on bad input.
+- **Missed or unclear speech:** O.R.I.O.N. ignores silence and anything said without the wake word. If you address it and it doesn't understand, it says so and suggests "help". It never crashes on bad input.
 - **Missing details:** say "Open…" or "Take a note" on its own and it asks what you meant.
 - **No microphone or PyAudio:** it tells you and switches to typed commands.
 - **No internet:** speech recognition and Wikipedia need a connection. O.R.I.O.N. tells you once and keeps running.
@@ -76,6 +84,7 @@ python orion.py              # window + voice (type commands in the box too)
 python orion.py --console    # terminal only
 python orion.py --text       # type instead of speaking (no microphone needed)
 python orion.py --lang fr    # French only  (en = English only, auto = both, default)
+python orion.py --no-wake-word   # react to all speech, not only after "Hey Orion"
 python orion.py --debug      # verbose logs
 ```
 
@@ -94,6 +103,7 @@ Copy `orion_config.example.json` to `orion_config.json` and change only the keys
 | `confirm_power_actions` | `true` | Ask "are you sure?" before shutting down or restarting |
 | `listen_timeout` / `phrase_time_limit` | `6` / `12` | Seconds to wait for speech / maximum command length |
 | `speech_rate` | `175` | Speaking speed |
+| `wake_word` | `true` | Only react to speech that starts with "Hey Orion" / « Dis Orion » |
 | `text_mode` | `false` | Always use typed commands |
 
 ## How it works
@@ -115,6 +125,8 @@ tests/test_orion.py      ← offline tests: python -m unittest discover tests
 **Language detection.** Every phrase you say is first transcribed in the current language. If that transcript doesn't clearly match a command, the same audio is also transcribed in the other language. O.R.I.O.N. keeps the transcript that matches a command *in its own language*. French run through the English recognizer rarely turns into a valid English command, so this choice is reliable. Replies follow the language you last used.
 
 **Speech engines.** Recognition uses the free Google Web Speech API through the `SpeechRecognition` package, so it needs internet access. Speech output works offline: SAPI5 on Windows, `say` on macOS and eSpeak NG on Linux.
+
+**Wake word detection** reads the same transcripts, so it needs no extra software. This also means that phrases without the wake word are still sent to Google to be transcribed before O.R.I.O.N. ignores them. A fully offline wake-word engine (such as openWakeWord or Porcupine) could be added later in `voice.py`.
 
 ## Adding your own command
 
