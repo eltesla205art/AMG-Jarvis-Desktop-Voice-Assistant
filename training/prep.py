@@ -18,7 +18,7 @@ rng = random.Random(1234)
 features = AudioFeatures(inference_framework="onnx", ncpu=4)
 
 speech_bg = files("sent_*_train/**/*.wav")
-bg_train = esc_files({1, 2, 3, 4}) + fsdd_split() + music_files()[:-2] + speech_bg[::4]
+bg_train = esc_files({1, 2, 3, 4}) + fsdd_split() + music_files() + speech_bg[::4]
 aug = Augmenter(bg_train, rng)
 
 
@@ -64,8 +64,8 @@ if "sent" in jobs:
     s = files("sent_*_train/**/*.wav")
     embed("neg_sent", clip_windows(s, 1) + clip_windows(s, 1, end_aligned=False))
 if "real" in jobs:
-    embed("neg_real", crops(esc_files({1, 2, 3, 4}), 3) + crops(fsdd_split(), 1)
-          + crops(music_files()[:-2], 150))
+    embed("neg_real", crops(esc_files({1, 2, 3, 4}), 15) + crops(fsdd_split(), 1)
+          + crops(music_files(), 150))  # ESC-10 is small: 15 crops per clip
 if "noise" in jobs:
     npr = np.random.default_rng(5)
     noise = [colored_noise(WIN, npr, k) * 10 ** (rng.uniform(-50, -10) / 20)

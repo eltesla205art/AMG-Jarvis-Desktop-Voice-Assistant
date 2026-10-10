@@ -33,10 +33,13 @@ def files(pattern):
     return sorted(glob.glob(str(CLIPS / pattern), recursive=True))
 
 
-def esc_files(folds):
+def esc_files(folds, esc10_only=True):
+    """ESC-50 clips. Only the ESC-10 subset is CC BY; the rest is CC BY-NC,
+    so training uses ESC-10 and the full set is used for testing only."""
     import csv
     rows = list(csv.DictReader(open(DATA / "esc50/meta/esc50.csv")))
-    return [str(DATA / "esc50/audio" / r["filename"]) for r in rows if int(r["fold"]) in folds]
+    return [str(DATA / "esc50/audio" / r["filename"]) for r in rows
+            if int(r["fold"]) in folds and (r["esc10"] == "True" or not esc10_only)]
 
 
 def fsdd_files(speakers):
@@ -52,8 +55,16 @@ def fsdd_split(test=False):
     return fsdd_files(FSDD_TEST if test else all_s - FSDD_TEST)
 
 
-def music_files():
-    return sorted(p for p in glob.glob(str(DATA / "librosa_data/audio/*.ogg")) if ".hq." not in p)
+# librosa example tracks licensed for non-commercial use only: never used.
+MUSIC_NONCOMMERCIAL = ("147793__setuniman", "442789__lena-orsa", "admiralbob77", "pibble")
+MUSIC_TEST = ("snare-accelerate", "sorohanro_-_solo-trumpet-06")
+
+
+def music_files(test=False):
+    """CC BY / CC0 / public-domain librosa examples, split into train and test."""
+    paths = sorted(p for p in glob.glob(str(DATA / "librosa_data/audio/*.ogg"))
+                   if ".hq." not in p and not Path(p).name.startswith(MUSIC_NONCOMMERCIAL))
+    return [p for p in paths if Path(p).name.startswith(MUSIC_TEST) == test]
 
 
 def colored_noise(n, rng, kind):

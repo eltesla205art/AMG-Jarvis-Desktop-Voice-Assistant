@@ -23,7 +23,9 @@ from audio_lib import (Augmenter, SR, esc_files, files, fsdd_split, load, music_
 model_path = sys.argv[1]
 thresholds = [float(t) for t in sys.argv[2:]] or [0.3, 0.5, 0.7, 0.8, 0.9]
 rng = random.Random(99)
-bg_test = esc_files({5}) + fsdd_split(test=True) + music_files()[-2:]
+# Test-only audio. The full ESC-50 fold 5 (partly CC BY-NC) is used to measure
+# the model, never to train it.
+bg_test = esc_files({5}, esc10_only=False) + fsdd_split(test=True) + music_files(test=True)
 aug = Augmenter(bg_test, rng)
 model = Model(wakeword_models=[model_path], inference_framework="onnx")
 name = Path(model_path).stem
@@ -78,9 +80,9 @@ peaks = {k: recall_for(v) for k, v in sets.items()}
 neg_sets = {
     "sentences EN/FR": files("sent_*_test/**/*.wav"),
     "sound-alikes": files("adv_*_test/**/*.wav"),
-    "real sounds (ESC-50)": esc_files({5}),
+    "real sounds (ESC-50)": esc_files({5}, esc10_only=False),
     "real speech (FSDD)": fsdd_split(test=True),
-    "music": music_files()[-2:],
+    "music": music_files(test=True),
 }
 neg_scores = {}
 for k, paths in neg_sets.items():

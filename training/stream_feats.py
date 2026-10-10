@@ -18,17 +18,17 @@ name, stride = sys.argv[1], int(sys.argv[2])
 sources = sys.argv[3:]
 rng = random.Random(hash(name) & 0xFFFF)
 features = AudioFeatures(inference_framework="onnx", ncpu=4)
-bg = esc_files({1, 2, 3, 4}) + fsdd_split() + music_files()[:-2] + files("sent_*_train/**/*.wav")[::5]
+bg = esc_files({1, 2, 3, 4}) + fsdd_split() + music_files() + files("sent_*_train/**/*.wav")[::5]
 aug = Augmenter(bg, rng)
 
 paths = []
 for s in sources:
-    if s == "esc":
-        paths += esc_files({1, 2, 3, 4})
+    if s == "esc":  # ESC-10 is small, so it is replayed with fresh augmentation
+        paths += esc_files({1, 2, 3, 4}) * 4
     elif s == "fsdd":
         paths += fsdd_split()
     elif s == "music":
-        paths += music_files()[:-2]
+        paths += music_files()
     else:
         paths += files(s)
 rng.shuffle(paths)
