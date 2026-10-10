@@ -15,23 +15,23 @@ The first start downloads openWakeWord's shared audio-feature models (about
 ## About the bundled model
 
 - Trained on synthetic voices (904 English speakers) with the scripts in
-  [`../training`](../training/README.md). In held-out tests it caught 96 % of
-  "Hey Orion" from voices it never heard, with about 5.7 false wake-ups per
+  [`../training`](../training/README.md). In held-out tests it caught 98 % of
+  "Hey Orion" from voices it never heard, with about 7 false wake-ups per
   hour on dense background audio.
 - **Say "Hey" the English way ("hay").** The French pronunciation
   ("è-orion") sounds like everyday French and is deliberately ignored.
   « Dis Orion » isn't detected offline either; for that, use
   `"wake_engine": "transcript"`.
 - It hasn't been tested with real voices in a real room yet. See Tuning below.
-- Part of the background audio it learned to ignore is licensed for
-  non-commercial use only (ESC-50 and some librosa tracks); see
-  [`../training/README.md`](../training/README.md#data) before commercial use.
+- Trained only on audio whose licenses allow commercial use (CC BY, CC0,
+  CC BY-SA, public domain); sources and attributions are in
+  [`../training/README.md`](../training/README.md#data).
 
 ## Tuning
 
 - **Wakes up by mistake?** Raise `wake_threshold` in `orion_config.json`
-  (for example `0.7` or `0.85`). In tests, 0.85 cut false wake-ups to about 4 per hour
-  and still caught 96 % of English voices.
+  (for example `0.7` or `0.85`). In tests, 0.85 cut false wake-ups to about 5 per hour
+  and still caught 97 % of English voices.
 - **Misses you?** Lower it (for example `0.3`), or train your own model (below).
 - **Try another phrase:** `"wake_model": "hey_jarvis"` uses openWakeWord's
   built-in "Hey Jarvis" model (downloaded on first use).

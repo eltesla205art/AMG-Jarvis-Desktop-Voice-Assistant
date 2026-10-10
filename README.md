@@ -53,7 +53,7 @@ Then run `python orion.py`. It switches to offline detection automatically. Say 
 
 - **Pronunciation:** say "Hey" the English way ("hay"). The French pronunciation ("è-orion") sounds too much like everyday French, so the offline model ignores it, and it doesn't detect « Dis Orion ». French speakers who prefer those can set `"wake_engine": "transcript"`.
 - **Without the engine:** if openWakeWord isn't installed, O.R.I.O.N. keeps using the transcript-based detection, so nothing breaks.
-- **More detail:** see [`models/README.md`](models/README.md) for accuracy, tuning and training your own model, and [`training/`](training/README.md) for how the bundled model was made (including a licensing note on its training data).
+- **More detail:** see [`models/README.md`](models/README.md) for accuracy, tuning and training your own model, and [`training/`](training/README.md) for how the bundled model was made (trained only on commercially usable audio).
 
 ### When something goes wrong
 - **Missed or unclear speech:** O.R.I.O.N. ignores silence and anything said without the wake word. If you address it and it doesn't understand, it says so and suggests "help". It never crashes on bad input.
