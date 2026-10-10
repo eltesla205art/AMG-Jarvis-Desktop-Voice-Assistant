@@ -4,10 +4,9 @@ The detector listens to the microphone locally (16 kHz, 80 ms frames) and
 only hands control to the online speech recognizer once it hears the wake
 phrase, so nothing leaves the computer until you say "Hey Orion".
 
-openWakeWord has no built-in "Hey Orion" model: train one with its free
-notebook (see README, "Offline wake word") and save it as
-``models/hey_orion.onnx``. Until that file exists, O.R.I.O.N. falls back to
-spotting the wake phrase in the online transcripts.
+The bundled ``models/hey_orion.onnx`` was trained with the scripts in
+``training/``. If openWakeWord isn't installed or the model is missing,
+O.R.I.O.N. falls back to spotting the wake phrase in the online transcripts.
 """
 
 from __future__ import annotations
