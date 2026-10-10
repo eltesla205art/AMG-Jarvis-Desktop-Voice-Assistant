@@ -42,17 +42,18 @@ To turn it off, use `python orion.py --no-wake-word` or set `"wake_word": false`
 
 By default O.R.I.O.N. finds "Hey Orion" in Google's transcripts, so everything the microphone hears is sent to Google first. For privacy, O.R.I.O.N. can detect the wake word **on your computer** with [openWakeWord](https://github.com/dscripka/openWakeWord). Then nothing leaves your computer until you say "Hey Orion"; only the command after it goes to Google.
 
-openWakeWord has no ready-made "Hey Orion" model, so you train one once (about an hour, free, no coding):
+A trained "Hey Orion" model is included (`models/hey_orion.onnx`), so you only need to install the engine:
 
-1. Follow the step-by-step guide in [`models/README.md`](models/README.md) and save the result as `models/hey_orion.onnx`.
-2. Install the offline engine:
-   ```bash
-   pip install -r requirements-wakeword.txt
-   pip install --no-deps openwakeword==0.6.0
-   ```
-3. Run `python orion.py`. When the model is present, it switches to offline detection automatically. Say *"Hey Orion"*, wait for *"How can I help?"*, then give your command.
+```bash
+pip install -r requirements-wakeword.txt
+pip install --no-deps openwakeword==0.6.0
+```
 
-Until the model file exists, it keeps using the transcript-based detection, so nothing breaks.
+Then run `python orion.py`. It switches to offline detection automatically. Say *"Hey Orion"*, wait for *"How can I help?"*, then give your command.
+
+- **Pronunciation:** say "Hey" the English way ("hay"). The French pronunciation ("è-orion") sounds too much like everyday French, so the offline model ignores it, and it doesn't detect « Dis Orion ». French speakers who prefer those can set `"wake_engine": "transcript"`.
+- **Without the engine:** if openWakeWord isn't installed, O.R.I.O.N. keeps using the transcript-based detection, so nothing breaks.
+- **More detail:** see [`models/README.md`](models/README.md) for accuracy, tuning and training your own model, and [`training/`](training/README.md) for how the bundled model was made (including a licensing note on its training data).
 
 ### When something goes wrong
 - **Missed or unclear speech:** O.R.I.O.N. ignores silence and anything said without the wake word. If you address it and it doesn't understand, it says so and suggests "help". It never crashes on bad input.
@@ -139,7 +140,8 @@ orion/
   platform_utils.py      ← open files/URLs, shut down/restart, per OS
   gui.py / ui.py         ← window and terminal front-ends
   skills/                ← one file per feature (clock, web, wiki, music, jokes, screenshot, notes, system, general)
-models/                  ← your trained hey_orion.onnx goes here (see models/README.md)
+models/hey_orion.onnx    ← offline "Hey Orion" model (see models/README.md)
+training/                ← scripts that trained it
 tests/test_orion.py      ← offline tests: python -m unittest discover tests
 ```
 
@@ -147,7 +149,7 @@ tests/test_orion.py      ← offline tests: python -m unittest discover tests
 
 **Speech engines.** Recognition uses the free Google Web Speech API through the `SpeechRecognition` package, so it needs internet access. Speech output works offline: SAPI5 on Windows, `say` on macOS and eSpeak NG on Linux.
 
-**Wake word detection** runs offline with openWakeWord when `models/hey_orion.onnx` exists (`wakeword.py`). Otherwise it reads the online transcripts, which needs no extra software but means phrases without the wake word are still sent to Google before O.R.I.O.N. ignores them.
+**Wake word detection** runs offline with openWakeWord and the bundled `models/hey_orion.onnx` when openWakeWord is installed (`wakeword.py`). Otherwise it reads the online transcripts, which needs no extra software but means phrases without the wake word are still sent to Google before O.R.I.O.N. ignores them.
 
 ## Adding your own command
 
